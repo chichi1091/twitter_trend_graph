@@ -4,6 +4,7 @@ import sys
 import datetime, time
 from requests_oauthlib import OAuth1Session
 from twitter_trend_graph import settings
+from dashboards.models.tweets import Tweets
 
 SEARCH_URL = 'https://api.twitter.com/1.1/search/tweets.json'
 SEARCH_KEYWORD = u'#lovelive'
@@ -52,9 +53,8 @@ def tweet_search_job():
             break
 
         for tweet in res_text['statuses']:
-            print('-----')
-            print(tweet['created_at'])
-            print(tweet['text'])
+            tweet = Tweets(text=tweet['text'], tweet_date=yesterday)
+            tweet.save()
 
         params['max_id'] = tweet['id'] - 1
 
