@@ -14,23 +14,43 @@ def tweet_search_job():
                             , settings.TWITTER['ACCESS_TOKEN'], settings.TWITTER['ACCESS_TOKEN_SECRET'])
 
     yesterday = datetime.date.today() - datetime.timedelta(1)
-    params = {'q': SEARCH_KEYWORD, 'count': 100, 'lang': 'ja', 'until': yesterday.strftime("%Y-%m-%d")}
+    params = {'q': SEARCH_KEYWORD, 'count': 200, 'lang': 'ja', 'until': yesterday.strftime("%Y-%m-%d")}
 
-    for i in [1, 2]:
+    error_count = 0
+    while True:
         print("{}回目".format(i))
         response = session.get(SEARCH_URL, params=params)
+
+        if response.status_code == 503:
+            if error_count > 5:
+                raise Exception("エラー上限に達したため終了します")
+
+            error_count += 1
+            time.sleep(30)
+            continue
+
+        if response.status_code == 429:
+            sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
+            time.sleep(sec + 5)
+            continue
 
         if response.status_code != 200:
             print("Twitter API Error: %d" % response.status_code)
             print("Twitter API Error: {}".format(response.text))
             sys.exit(1)
 
-        print('アクセス可能回数 %s' % response.headers['X-Rate-Limit-Remaining'])
-        print('リセット時間 %s' % response.headers['X-Rate-Limit-Reset'])
-        sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
-        print('リセット時間 （残り秒数に換算） %s' % sec)
+        limit = response.headers['X-Rate-Limit-Remaining']
+        if limit == 0:
+            sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
+            time.sleep(sec + 5)
+            continue
+
+        error_count = 0
 
         res_text = json.loads(response.text)
+        if len(res_text) == 0:
+            break
+
         for tweet in res_text['statuses']:
             print('-----')
             print(tweet['created_at'])
