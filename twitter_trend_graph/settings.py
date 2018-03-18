@@ -150,6 +150,14 @@ LOGGING = {
     }
 }
 
+TWITTER = {
+    'CONSUMER_KEY': 'hoge',
+    'CONSUMER_SECRET': 'hoge',
+    'ACCESS_TOKEN': 'hoge',
+    'ACCESS_TOKEN_SECRET': 'hoge',
+}
+
+
 try:
     from .local_settings import *
 except ImportError:
