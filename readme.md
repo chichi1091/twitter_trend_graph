@@ -9,6 +9,7 @@ pip install psycopg2 psycopg2-binary
 pip install dj-database-url
 pip install gunicorn
 pip install python-twitter
+pip install pyspark
 
 pip freeze > requirements.txt
 ```
@@ -24,4 +25,12 @@ python manage.py startapp dashboards
 python manage.py makemigrations dashboards
 python manage.py sqlmigrate dashboards 0001
 python manage.py migrate
+```
+
+
+## crontab
+```sh
+python manage.py crontab add
+python manage.py crontab remove
+python manage.py crontab run 4a7d41a49a0db77504e52f3fb190bbab
 ```

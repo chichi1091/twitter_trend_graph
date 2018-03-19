@@ -3,9 +3,10 @@ import json
 import sys
 import datetime, time
 import re
+import os
+from pyspark.shell import sc
 from requests_oauthlib import OAuth1Session
 from twitter_trend_graph import settings
-from dashboards.models.tweets import Tweets
 
 SEARCH_URL = 'https://api.twitter.com/1.1/search/tweets.json'
 SEARCH_KEYWORD = u'#lovelive'
@@ -18,8 +19,16 @@ def tweet_search_job():
     yesterday = datetime.date.today() - datetime.timedelta(1)
     params = {'q': SEARCH_KEYWORD, 'count': 200, 'lang': 'ja', 'until': yesterday.strftime("%Y-%m-%d")}
 
+    if os.path.isfile('tweets.txt'):
+        os.remove('tweets.txt')
+
+    f = open('tweets.txt', 'w')
     error_count = 0
+    count = 0
     while True:
+        if count >= 50:
+            break
+
         response = session.get(SEARCH_URL, params=params)
 
         if response.status_code == 503:
@@ -53,13 +62,30 @@ def tweet_search_job():
         if len(res_text) == 0:
             break
 
+        max_id = ""
         for tweet in res_text['statuses']:
-            match = re.search(r'/(全員|ふぁぼ|ファボ|定期|相互)/', tweet['text'])
+            match = re.search(r'(全員|ふぁぼ|ファボ|定期|相互|RT)', tweet['text'], re.MULTILINE)
             if match is None:
-                # print(tweet['text'])
-                # print('----------')
-                tweet = Tweets(text=tweet['text'], tweet_date=yesterday)
-                tweet.save()
+                f.write(tweet['text'] + '\n')
+                # entity = Tweets(text=tweet['text'], tweet_date=yesterday)
+                # entity.save()
+            max_id = tweet['id']
 
-        params['max_id'] = tweet['id'] - 1
+        params['max_id'] = max_id
+        count += 1
+
+    f.close()
+
+    textfile = sc.textFile("tweets.txt")
+    print(textfile.count())
+
+    words = textfile.flatMap(lambda line: line.split())
+    filter = words.filter(lambda x: "lovelive" not in x)
+    filter = filter.filter(lambda x: len(x) >= 2)
+    words_tuple = filter.map(lambda word: (word, 1))
+    words_count = words_tuple.reduceByKey(lambda a, b: a + b)
+    words_count_sorted = words_count.sortBy(lambda t: t[1], False)
+    print(words_count_sorted.collect()[:10])
+
+
 

@@ -9,6 +9,8 @@ idna==2.6
 oauthlib==2.0.6
 psycopg2==2.7.4
 psycopg2-binary==2.7.4
+py4j==0.10.6
+pyspark==2.3.0
 python-twitter==3.4.1
 pytz==2018.3
 requests==2.18.4
