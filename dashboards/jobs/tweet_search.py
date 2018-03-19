@@ -2,6 +2,7 @@
 import json
 import sys
 import datetime, time
+import re
 from requests_oauthlib import OAuth1Session
 from twitter_trend_graph import settings
 from dashboards.models.tweets import Tweets
@@ -19,7 +20,6 @@ def tweet_search_job():
 
     error_count = 0
     while True:
-        print("{}回目".format(i))
         response = session.get(SEARCH_URL, params=params)
 
         if response.status_code == 503:
@@ -32,6 +32,7 @@ def tweet_search_job():
 
         if response.status_code == 429:
             sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
+            print("---{} sec sleep".format(sec))
             time.sleep(sec + 5)
             continue
 
@@ -53,11 +54,12 @@ def tweet_search_job():
             break
 
         for tweet in res_text['statuses']:
-            tweet = Tweets(text=tweet['text'], tweet_date=yesterday)
-            tweet.save()
+            match = re.search(r'/(全員|ふぁぼ|ファボ|定期|相互)/', tweet['text'])
+            if match is None:
+                # print(tweet['text'])
+                # print('----------')
+                tweet = Tweets(text=tweet['text'], tweet_date=yesterday)
+                tweet.save()
 
         params['max_id'] = tweet['id'] - 1
 
-
-if __name__ == '__main__':
-    tweet_search_job()

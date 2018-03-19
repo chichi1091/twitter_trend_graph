@@ -158,6 +158,10 @@ TWITTER = {
 }
 
 
+CRONJOBS = [
+    ('10 0 * * *', 'dashboards.jobs.tweet_search.tweet_search_job')
+]
+
 try:
     from .local_settings import *
 except ImportError:
