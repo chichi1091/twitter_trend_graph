@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>トレンド</h1>
+    <div id="calendar"></div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="/static/js/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/js/language/ja-JP.js"></script>
+    <script type="text/javascript">
+        var calendar = $("#calendar").calendar(
+            {
+                tmpl_path: "/static/tmpls/",
+                language: 'ja-JP',
+                events_source: function () { return []; }
+            });
+    </script>
+{% endblock %}

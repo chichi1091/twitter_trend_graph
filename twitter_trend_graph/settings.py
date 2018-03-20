@@ -59,7 +59,7 @@ ROOT_URLCONF = 'twitter_trend_graph.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'dashboards/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,7 +126,10 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ALLOWED_HOSTS = ['*']
 
 STATIC_ROOT = 'staticfiles'
-
+STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    [os.path.join(BASE_DIR, 'static')]
+)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

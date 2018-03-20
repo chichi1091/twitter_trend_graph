@@ -25,10 +25,10 @@ def tweet_search_job():
 
     f = open('tweets.txt', 'w')
     error_count = 0
-    count = 0
+    # count = 0
     while True:
-        if count >= 50:
-            break
+        # if count >= 50:
+        #     break
 
         response = session.get(SEARCH_URL, params=params)
 
@@ -51,7 +51,7 @@ def tweet_search_job():
             print("Twitter API Error: {}".format(response.text))
             sys.exit(1)
 
-        limit = response.headers['X-Rate-Limit-Remaining']
+        limit = response.headers.get('X-Rate-Limit-Remaining', 0)
         if limit == 0:
             sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
             time.sleep(sec + 5)
@@ -73,7 +73,7 @@ def tweet_search_job():
             max_id = tweet['id']
 
         params['max_id'] = max_id
-        count += 1
+        # count += 1
 
     f.close()
 
