@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import sys
-import datetime, time
+import datetime
+import time
 import re
 import os
 from pyspark.shell import sc
@@ -40,7 +41,7 @@ def tweet_search_job():
 
             if response.status_code == 429:
                 sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
-                print("{0}---{1} sec sleep".format(datetime.date.today(), sec))
+                print("{0}---{1} sec sleep".format(datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"), sec))
                 time.sleep(sec + 5)
                 continue
 
