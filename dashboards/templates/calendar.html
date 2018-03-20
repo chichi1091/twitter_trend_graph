@@ -11,9 +11,13 @@
     <script type="text/javascript">
         var calendar = $("#calendar").calendar(
             {
+                view: 'month',
                 tmpl_path: "/static/tmpls/",
+                tmpl_cache: false,
                 language: 'ja-JP',
-                events_source: function () { return []; }
+                day: "now",
+                events_source: function () { return []; },
             });
+        console.log(calendar);
     </script>
 {% endblock %}
