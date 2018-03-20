@@ -7,6 +7,7 @@ import os
 from pyspark.shell import sc
 from requests_oauthlib import OAuth1Session
 from twitter_trend_graph import settings
+from dashboards.models.trends import Trends
 
 SEARCH_URL = 'https://api.twitter.com/1.1/search/tweets.json'
 SEARCH_KEYWORD = u'#lovelive'
@@ -80,12 +81,19 @@ def tweet_search_job():
     print(textfile.count())
 
     words = textfile.flatMap(lambda line: line.split())
-    filter = words.filter(lambda x: "lovelive" not in x)
-    filter = filter.filter(lambda x: len(x) >= 2)
-    words_tuple = filter.map(lambda word: (word, 1))
+    words_filter = words.filter(lambda x: SEARCH_KEYWORD not in x)
+    words_filter = words_filter.filter(lambda x: "#" not in x)
+    words_filter = words_filter.filter(lambda x: len(x) >= 2)
+
+    words_tuple = words_filter.map(lambda word: (word, 1))
     words_count = words_tuple.reduceByKey(lambda a, b: a + b)
     words_count_sorted = words_count.sortBy(lambda t: t[1], False)
     print(words_count_sorted.collect()[:10])
+
+    for ranking in words_count_sorted.collect()[:10]:
+        trends = Trends(target_date=yesterday, word=ranking[0], count=ranking[1])
+        trends.save()
+
 
 
 
