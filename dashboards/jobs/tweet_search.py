@@ -10,6 +10,7 @@ from twitter_trend_graph import settings
 from dashboards.models.trends import Trends
 
 SEARCH_URL = 'https://api.twitter.com/1.1/search/tweets.json'
+LIMIT_STATUS = 'https://api.twitter.com/1.1/application/rate_limit_status.json'
 SEARCH_KEYWORD = u'#lovelive'
 
 
@@ -39,7 +40,7 @@ def tweet_search_job():
 
             if response.status_code == 429:
                 sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
-                print("---{} sec sleep".format(sec))
+                print("{0}---{1} sec sleep".format(datetime.date.today(), sec))
                 time.sleep(sec + 5)
                 continue
 
@@ -48,9 +49,13 @@ def tweet_search_job():
                 print("Twitter API Error: {}".format(response.text))
                 sys.exit(1)
 
-            limit = response.headers.get('X-Rate-Limit-Remaining', 0)
+            reset = 0
+            limit = response.headers.get('X-Rate-Limit-Remaining', None)
+            if limit is None:
+                limit, reset = getLimitStatus(session)
+
             if limit == 0:
-                sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
+                sec = int(response.headers.get('X-Rate-Limit-Reset', reset)) - time.mktime(datetime.datetime.now().timetuple())
                 time.sleep(sec + 5)
                 continue
 
@@ -93,5 +98,18 @@ def tweet_search_job():
         os.remove('tweets.txt')
 
 
+def getLimitStatus(session):
+    limit_response = session.get(LIMIT_STATUS)
+    if limit_response.status_code == 503:
+        raise Exception(limit_response.text)
 
+    if limit_response.status_code != 200:
+        print("Twitter API Error: %d" % limit_response.status_code)
+        print("Twitter API Error: {}".format(limit_response.text))
+        sys.exit(1)
 
+    limit_json = json.loads(limit_response.text)
+    remaining = limit_json['resources']['search']['/search/tweets']['remaining']
+    reset = limit_json['resources']['search']['/search/tweets']['reset']
+
+    return int(remaining), int(reset)
