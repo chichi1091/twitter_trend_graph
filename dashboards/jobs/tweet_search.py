@@ -28,6 +28,7 @@ def tweet_search_job():
 
     try:
         error_count = 0
+        too_many_requests_count = 0
         while True:
             response = session.get(SEARCH_URL, params=params)
 
@@ -40,6 +41,10 @@ def tweet_search_job():
                 continue
 
             if response.status_code == 429:
+                if too_many_requests_count >= 7:
+                    break
+
+                too_many_requests_count += 1
                 sec = int(response.headers['X-Rate-Limit-Reset']) - time.mktime(datetime.datetime.now().timetuple())
                 print("{0}---{1} sec sleep".format(datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"), sec))
                 time.sleep(sec + 5)
