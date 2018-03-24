@@ -53,7 +53,9 @@ def tweet_search_job():
             if response.status_code != 200:
                 print("Twitter API Error: %d" % response.status_code)
                 print("Twitter API Error: {}".format(response.text))
-                sys.exit(1)
+
+                time.sleep(30)
+                continue
 
             reset = 0
             limit = response.headers.get('X-Rate-Limit-Remaining', None)
@@ -98,7 +100,7 @@ def tweet_search_job():
         print(words_count_sorted.collect()[:10])
 
         for ranking in words_count_sorted.collect()[:10]:
-            trends = Trends(target_date=yesterday, word=ranking[0], count=ranking[1])
+            trends = Trends(target_date=yesterday.strftime("%Y-%m-%d"), word=ranking[0], count=ranking[1])
             trends.save()
     finally:
         os.remove('tweets.txt')

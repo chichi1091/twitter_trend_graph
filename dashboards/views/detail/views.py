@@ -1,12 +1,11 @@
-from django.views.generic import TemplateView
-from datetime import datetime as dt
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from dashboards.models.trends import Trends
 
 
-class DetailTemplate(TemplateView):
-    template_name = "detail.html"
+class TrendsDetailView(APIView):
 
-    def index(self, **kwargs):
-        day = kwargs['day']
-        context = super().get_context_data(**kwargs)
-        context["date"] = dt.strptime(day, '%Y-%m-%d')
-        return context
+    def get(self, request, day, format=None):
+        trends = Trends.objects.get(target_date=day)
+
+        return Response()
