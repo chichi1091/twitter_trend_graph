@@ -8,4 +8,9 @@ class TrendsDetailView(APIView):
     def get(self, request, day, format=None):
         trends = Trends.objects.get(target_date=day)
 
-        return Response()
+        lists = [{
+            "name": trend.word
+            , "val": trend.count
+        } for trend in trends]
+
+        return Response(lists)

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ view.date }}</h1>
-<div id="calendar"></div>
+<h1>{{ day }}</h1>
+<svg id="bubble_chart" width="600" height="400"></svg>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="/static/js/detail.js"></script>
 {% endblock %}
